@@ -1,0 +1,12 @@
+{
+  "dataset": "company_demo",
+  "source_type": "vpn",
+  "event_type": "session",
+  "event_time": "2026-07-20T03:00:00Z",
+  "actor_alias": "u25",
+  "device_health": "healthy",
+  "auth_attempts": 30,
+  "latency_ms": 100,
+  "geo_zone": "seoul",
+  "network_traffic_status": "abnormal"
+}

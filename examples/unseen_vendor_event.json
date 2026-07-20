@@ -1,0 +1,8 @@
+{
+  "source_type": "vendor_x_cloud_audit",
+  "tenant_actor": "actor-0193",
+  "custom_risk_hint": 0.82,
+  "object_sensitivity": "restricted",
+  "operation_name": "bulk_export",
+  "observed_at": "2026-07-20T02:20:00+09:00"
+}

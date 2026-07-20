@@ -1,0 +1,76 @@
+{
+  "input": "composite_risk_case.json",
+  "paper_derived_rule_baseline": {
+    "reference": "Jeong and Yang, Applied Sciences 2025, 15, 9551, Tables 2-5 and Equation (1)",
+    "sub_metric_scale": [0, 5, 10, 15, 20],
+    "factor_weights": {
+      "B": 0.4,
+      "N": 0.3,
+      "D": 0.2,
+      "T": 0.1
+    },
+    "factor_scores": {
+      "B": 75.0,
+      "N": 85.0,
+      "D": 50.0,
+      "T": 100.0
+    },
+    "factor_contributions": {
+      "B": 30.0,
+      "N": 25.5,
+      "D": 10.0,
+      "T": 10.0
+    },
+    "trust_score": 75.5,
+    "policy": "require_additional_authentication",
+    "coverage": {
+      "observed_or_project_mapped_metrics": 10,
+      "total_metrics": 20,
+      "ratio": 0.5,
+      "favorable_normal_assumptions": 10
+    },
+    "key_sub_metric_scores": {
+      "03:00_off_hours_login": 0,
+      "busan_new_location_login": 15,
+      "busan_access_location_reliability": 10,
+      "450ms_network_stability_proxy": 15,
+      "degraded_device_metrics_each": 10
+    }
+  },
+  "proposed_model": {
+    "checkpoint": "artifacts/onboarding_smoke/model.pt",
+    "trust_score": 0.0,
+    "risk_score": 1.0,
+    "confidence": 0.7980133295059204,
+    "policy": "deny_or_isolate",
+    "top_fields": {
+      "geo_zone": {
+        "weight": 0.5210090279579163,
+        "risk_logit_contribution": 3.0557138919830322
+      },
+      "device_health": {
+        "weight": 0.47407886385917664,
+        "risk_logit_contribution": 2.784245014190674
+      }
+    }
+  },
+  "normal_reference": {
+    "input": "new_source_normal_event.json",
+    "paper_derived_rule_baseline": {
+      "trust_score": 100.0,
+      "policy": "allow"
+    },
+    "proposed_model": {
+      "trust_score": 99.97190860449336,
+      "risk_score": 0.0002809139550663531,
+      "policy": "allow"
+    }
+  },
+  "comparison": "The fixed paper-derived scorecard accumulates risk and requires MFA; the profile-calibrated proposed model applies stronger field concentration and blocks. One synthetic case does not establish superiority.",
+  "limitations": [
+    "The paper calls this a Trust Score model; this project uses its deterministic score tables and fixed weights as a rule baseline.",
+    "Latency-to-network-stability and aggregate device-health mappings are project proxies.",
+    "Ten unobserved sub-metrics receive favorable normal scores.",
+    "Company replay labels and policy costs are required to decide whether MFA or blocking is the better action."
+  ]
+}

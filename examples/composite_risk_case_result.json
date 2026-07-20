@@ -1,0 +1,52 @@
+{
+  "case": "fixed-rule false negative versus field-level dynamic weighting",
+  "expected_security_disposition": "must_not_allow",
+  "fixed_rule_baseline": {
+    "rules": {
+      "device_health": "deny when compromised",
+      "auth_attempts": "deny when greater than or equal to 5",
+      "latency_ms": "deny when greater than or equal to 500",
+      "geo_zone": "deny when zone is on the blocklist"
+    },
+    "checks": {
+      "device_health": "degraded is not compromised",
+      "auth_attempts": "4 is less than 5",
+      "latency_ms": "450 is less than 500",
+      "geo_zone": "busan is not on the blocklist"
+    },
+    "decision": "allow",
+    "failure_mode": "each weak signal is evaluated independently, so their joint deviation is ignored"
+  },
+  "dynamic_model": {
+    "checkpoint": "artifacts/onboarding_smoke/model.pt",
+    "raw_risk_probability": 0.9967108964920044,
+    "calibrated_risk": 1.0,
+    "trust_score": 0.0,
+    "confidence": 0.7980133295059204,
+    "shadow_mode_required": false,
+    "policy": "deny_or_isolate",
+    "top_field_evidence": [
+      {
+        "field": "geo_zone",
+        "weight": 0.5210090279579163,
+        "risk_logit_contribution": 3.0557138919830322
+      },
+      {
+        "field": "device_health",
+        "weight": 0.47407886385917664,
+        "risk_logit_contribution": 2.784245014190674
+      },
+      {
+        "field": "auth_attempts",
+        "weight": 0.0024861576966941357,
+        "risk_logit_contribution": 0.00947642419487238
+      },
+      {
+        "field": "latency_ms",
+        "weight": 0.0022184753324836493,
+        "risk_logit_contribution": 0.007398704066872597
+      }
+    ]
+  },
+  "scope_note": "Synthetic normal-only onboarding demonstration; production superiority requires replay with company labels and policy outcomes."
+}

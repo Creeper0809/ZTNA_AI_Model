@@ -1,0 +1,14 @@
+{
+  "event_time": "2018-12-01T10:51:39Z",
+  "source_type": "ndr",
+  "event_type": "network_flow",
+  "device_id_hash": "device_example",
+  "session_id": "session_example",
+  "src_ip_hash": "ip_example",
+  "dst_ip": "192.168.50.1",
+  "action": "connect",
+  "protocol": "17",
+  "src_port": "634",
+  "dst_port": "60495",
+  "dataset": "cicids2019"
+}

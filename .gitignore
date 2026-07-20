@@ -1,0 +1,39 @@
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Packaging outputs
+build/
+dist/
+*.egg-info/
+
+# Local secrets and configuration
+.env
+.env.*
+!.env.example
+
+# Datasets, checkpoints, and generated outputs
+data/
+artifacts/
+outputs/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.csv
+*.csv.gz
+*.parquet
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
