@@ -114,7 +114,7 @@ CSV, CSV.GZ, JSON, JSONL을 지원한다. 입력이 정상임을 운영자가 �
 - `policy`: shadow 또는 allow/monitor/step_up/restrict/deny 제안이다.
 - `top_fields`, `source_weights`, `bndt_posthoc_contributions`: 판정의 필드·원천별 근거다.
 
-## 논문식 점수형 룰베이스 비교
+## 룰베이스 모델 비교
 
 Jeong과 Yang(2025)의 20개 세부 지표, 0/5/10/15/20점 rubric,
 고정 가중치 `B/N/D/T=0.4/0.3/0.2/0.1`, 허용/MFA/차단 구간을
@@ -129,7 +129,7 @@ Jeong과 Yang(2025)의 20개 세부 지표, 0/5/10/15/20점 rubric,
   --input examples\composite_risk_case.json
 ```
 
-동일 복합위험 예시에서 점수형 룰베이스는 `B=75, N=85, D=50, T=100`,
+동일 복합위험 예시에서 룰베이스 모델은 `B=75, N=85, D=50, T=100`,
 Trust 75.5로 추가 인증(MFA)을 요구하고, 제안 모델은 Trust 0.0으로 차단한다.
 현재 VPN 예시는 논문의 20개 항목 중 10개만 직접 관측하거나 프로젝트 proxy로
 매핑하며 나머지 10개는 정상 20점으로 가정한다. 따라서 이 비교는 판정 구조를
@@ -159,7 +159,7 @@ Trust 75.5로 추가 인증(MFA)을 요구하고, 제안 모델은 Trust 0.0으�
 - `artifacts/training_sample.csv.gz`: 21,000행 대표 표본
 - `artifacts/training_sample_profile.json`: 표본 구성과 split 기록
 - `examples/new_source_*`: 미지 스키마 온보딩·정상·이상 예시
-- `examples/composite_risk_scorecard_comparison.json`: 논문식 룰베이스와 제안 모델의 동일 요청 비교
+- `examples/composite_risk_scorecard_comparison.json`: 룰베이스 모델과 제안 모델의 동일 요청 비교
 
 ## 남아 있는 한계
 

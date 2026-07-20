@@ -1,4 +1,4 @@
-"""Compare the paper-derived scorecard and the trained field-attention model."""
+"""Compare the rule-based model and the trained field-attention model."""
 
 from __future__ import annotations
 

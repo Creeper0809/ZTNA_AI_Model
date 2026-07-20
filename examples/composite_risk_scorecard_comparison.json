@@ -66,7 +66,7 @@
       "policy": "allow"
     }
   },
-  "comparison": "The fixed paper-derived scorecard accumulates risk and requires MFA; the profile-calibrated proposed model applies stronger field concentration and blocks. One synthetic case does not establish superiority.",
+  "comparison": "The rule-based model accumulates risk and requires MFA; the profile-calibrated proposed model applies stronger field concentration and blocks. One synthetic case does not establish superiority.",
   "limitations": [
     "The paper calls this a Trust Score model; this project uses its deterministic score tables and fixed weights as a rule baseline.",
     "Latency-to-network-stability and aggregate device-health mappings are project proxies.",
