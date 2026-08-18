@@ -1,0 +1,34 @@
+services:
+  ztna-ueba:
+    build:
+      context: .
+    init: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      ZTNA_CHECKPOINT: /models/model.pt
+      ZTNA_DATABASE: /data/operations.sqlite
+      ZTNA_API_KEY: ${ZTNA_API_KEY:?ZTNA_API_KEY must be set in .env}
+      ZTNA_EXPLANATION_WORKERS: ${ZTNA_EXPLANATION_WORKERS:-1}
+      ZTNA_EXPLANATION_QUEUE_CAPACITY: ${ZTNA_EXPLANATION_QUEUE_CAPACITY:-256}
+      ZTNA_SCORING_CONCURRENCY: ${ZTNA_SCORING_CONCURRENCY:-2}
+    ports:
+      - "${ZTNA_PORT:-8080}:8080"
+    volumes:
+      - ./artifacts/final_portable_model/model.pt:/models/model.pt:ro
+      - operations-data:/data
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/ready', timeout=2)"]
+      interval: 20s
+      timeout: 4s
+      retries: 5
+      start_period: 40s
+
+volumes:
+  operations-data:

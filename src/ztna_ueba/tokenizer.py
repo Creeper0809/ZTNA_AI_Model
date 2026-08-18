@@ -14,6 +14,8 @@ from .baseline import BASELINE_FEATURE_DIM, BaselineRegistry, DEFAULT_PROFILE_FI
 from .hashing import field_name_pieces, stable_bucket, value_pieces
 
 
+NORMAL_REFERENCE_FIELDS_KEY = "__ueba_normal_reference_fields__"
+
 DEFAULT_EXCLUDED_FIELDS = frozenset(
     {
         "label",
@@ -29,6 +31,7 @@ DEFAULT_EXCLUDED_FIELDS = frozenset(
         "target",
         "ground_truth",
         "y",
+        NORMAL_REFERENCE_FIELDS_KEY,
     }
 )
 
@@ -184,10 +187,20 @@ class FieldTokenizer:
             )
         )
         metadata_fields = set(self.config.profile_fields) if self.config.portable_mode else set()
+        raw_reference_fields = record.get(NORMAL_REFERENCE_FIELDS_KEY, ())
+        reference_fields = (
+            {
+                str(name).strip().lower()
+                for name in raw_reference_fields
+            }
+            if isinstance(raw_reference_fields, (list, tuple, set, frozenset))
+            else set()
+        )
         fields = [
             (str(name), value)
             for name, value in record.items()
             if str(name).strip().lower() not in self.config.excluded_fields
+            and str(name).strip().lower() != NORMAL_REFERENCE_FIELDS_KEY
             and str(name).strip().lower() not in metadata_fields
             and not _is_missing(value)
         ]
@@ -200,7 +213,12 @@ class FieldTokenizer:
                 value_parts = [f"<type:{type_id}>"]
                 numeric = [0.0] * 8
                 baseline = (
-                    self.baseline_registry.features(profile_key, name, value)
+                    self.baseline_registry.normal_reference_features_for_record(
+                        record, name
+                    )[0]
+                    if self.baseline_registry is not None
+                    and name.strip().lower() in reference_fields
+                    else self.baseline_registry.features_for_record(record, name, value)
                     if self.baseline_registry is not None
                     else [0.0] * BASELINE_FEATURE_DIM
                 )

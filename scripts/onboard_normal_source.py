@@ -132,10 +132,7 @@ def main() -> None:
         excluded_fields=tokenizer_config.excluded_fields,
         profile_fields=tokenizer_config.profile_fields,
     )
-    merged_registry = BaselineRegistry(
-        profiles={**existing_registry.profiles, **incoming_registry.profiles},
-        profile_fields=existing_registry.profile_fields,
-    )
+    merged_registry = existing_registry.merged(incoming_registry)
     tokenizer = FieldTokenizer(tokenizer_config, merged_registry)
     device = torch.device(
         "cuda"
@@ -191,6 +188,10 @@ def main() -> None:
         "checkpoint": str(output_path.resolve()),
         "normal_records": len(records),
         "baseline_profiles_updated": sorted(incoming_registry.profiles),
+        "hierarchical_baselines_updated": {
+            scope: len(profiles)
+            for scope, profiles in incoming_registry.hierarchical_profiles.items()
+        },
         "calibration_profiles_ready": sorted(incoming_calibrator.profiles),
         "stored_raw_values": False,
     }

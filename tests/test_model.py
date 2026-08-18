@@ -5,6 +5,7 @@ from collections import OrderedDict
 import pytest
 import torch
 
+from ztna_ueba.explain import explain_request
 from ztna_ueba.model import HierarchicalFieldAttention, ModelConfig
 from ztna_ueba.tokenizer import FieldTokenizer, TokenizerConfig, collate_requests
 
@@ -100,3 +101,22 @@ def test_reported_field_contributions_reconstruct_risk_logit(tokenizer, model):
         output = model(batch)
     reconstructed = model.global_bias + output["field_contributions"].sum(dim=(1, 2))
     torch.testing.assert_close(reconstructed, output["risk_logit"], atol=1e-6, rtol=1e-6)
+
+
+def test_explanation_keeps_weight_rank_separate_from_risk_contribution_rank():
+    explanation = explain_request(
+        [["high_weight", "high_contribution"]],
+        torch.tensor([1.0]),
+        torch.tensor([[0.8, 0.2]]),
+        torch.tensor([[0.1, 0.9]]),
+        torch.tensor([[2.0, 1.0]]),
+        top_k=2,
+    )
+    first, second = explanation["top_fields"]
+
+    assert first["field"] == "high_contribution"
+    assert first["risk_contribution_rank"] == 1
+    assert first["field_weight_rank"] == 2
+    assert second["field"] == "high_weight"
+    assert second["risk_contribution_rank"] == 2
+    assert second["field_weight_rank"] == 1

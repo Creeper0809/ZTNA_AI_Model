@@ -154,6 +154,9 @@ class HierarchicalFieldAttention(nn.Module):
         trust_score = 100.0 * (1.0 - risk_probability)
 
         flat_field_weights = field_weights.reshape(batch_size, event_count, field_count)
+        flat_field_weight_logits = field_weight_logits.reshape(
+            batch_size, event_count, field_count
+        )
         flat_field_evidence = field_evidence.reshape(batch_size, event_count, field_count)
         field_contributions = (
             event_weights.unsqueeze(-1) * flat_field_weights * flat_field_evidence
@@ -181,6 +184,7 @@ class HierarchicalFieldAttention(nn.Module):
             "confidence": confidence,
             "attention_concentration": concentration,
             "field_weights": flat_field_weights,
+            "field_weight_logits": flat_field_weight_logits,
             "event_weights": event_weights,
             "field_evidence": flat_field_evidence,
             "field_contributions": field_contributions,
