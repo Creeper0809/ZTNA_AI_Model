@@ -1,4 +1,4 @@
-"""Compare the paper-derived scorecard and the trained field-attention model."""
+"""Compare the rule-based model and the trained field-attention model."""
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def main() -> None:
     disagreement_direction = f"rule_{rule_stage}_model_{model_stage}"
     observed_metrics = rule_result["coverage"]["observed_or_project_mapped_metrics"]
     total_metrics = rule_result["coverage"]["total_metrics"]
-    assumed_metrics = total_metrics - observed_metrics
+    missing_required_metrics = total_metrics - observed_metrics
     result = {
         "input": event,
         "rule_baseline": rule_result,
@@ -76,9 +76,10 @@ def main() -> None:
             ),
             "fairness_note": (
                 f"The rule baseline observes or project-maps {observed_metrics} of "
-                f"{total_metrics} paper sub-metrics; the other {assumed_metrics} receive favorable "
-                "normal scores. The two policy scales are reported as defined, without forcing "
-                "equivalent thresholds."
+                f"{total_metrics} source-applicable sub-metrics; {missing_required_metrics} missing "
+                "required metrics receive zero, never a favorable normal score. Structurally "
+                "inapplicable factors are excluded and active factor weights are renormalized. "
+                "The two policy scales are reported as defined, without forcing equivalent thresholds."
             ),
         },
     }

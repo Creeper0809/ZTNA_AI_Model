@@ -1,0 +1,23 @@
+{
+  "event_time": "2018-12-01T11:45:35Z",
+  "source_type": "ndr",
+  "event_type": "network_flow",
+  "device_id_hash": "device_da4530f82a0c7444",
+  "session_id": "sess_6c22cd7f5e80363a",
+  "src_ip_hash": "ip_da4530f82a0c7444",
+  "dst_ip": "192.168.50.1",
+  "action": "connect",
+  "result": "abnormal",
+  "resource_id": "res_62047c736809c587",
+  "label": "abnormal",
+  "dataset": "cicids2019",
+  "raw_label": "DrDoS_MSSQL",
+  "attack_category": "DrDoS_MSSQL",
+  "protocol": "17",
+  "src_port": "36542",
+  "dst_port": "43322",
+  "source_file": "cicddos2019.zip:CSV-01-12/01-12/DrDoS_MSSQL.csv",
+  "_sample_hash": "780902366125147",
+  "_group_id": "cicids2019:session_id:sess_6c22cd7f5e80363a",
+  "split": "test"
+}

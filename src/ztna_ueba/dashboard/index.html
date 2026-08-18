@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ZTNA-UEBA Security Operations</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="주 메뉴">
+      <a class="brand" href="/">
+        <span class="brand-mark">Z</span>
+        <span><strong>ZTNA·UEBA</strong><small>Security Operations</small></span>
+      </a>
+      <nav>
+        <a class="nav-item active" href="#overview"><span class="nav-icon">⌁</span>운영 현황</a>
+        <a class="nav-item" href="#events"><span class="nav-icon">◎</span>이벤트 조사</a>
+        <a class="nav-item" href="/docs"><span class="nav-icon">⌘</span>API 문서</a>
+      </nav>
+      <div class="sidebar-note">
+        <span class="eyebrow">판정 원칙</span>
+        <p>AI는 위험도와 근거를 계산하고, 정책 엔진이 최종 접근 조치를 결정합니다.</p>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">LIVE OPERATIONS</p>
+          <h1>위험 이벤트 관제</h1>
+        </div>
+        <div class="topbar-actions">
+          <div id="apiState" class="status-chip loading"><i></i><span>연결 확인 중</span></div>
+          <button id="apiKeyButton" class="button secondary" type="button">API 키</button>
+          <button id="refreshButton" class="button primary" type="button">새로고침</button>
+        </div>
+      </header>
+
+      <section id="connectionBanner" class="banner hidden" role="alert"></section>
+
+      <section id="overview" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">LAST 24 HOURS</p>
+            <h2>운영 현황</h2>
+          </div>
+          <p id="lastUpdated" class="muted">아직 불러오지 않음</p>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric-card accent-blue">
+            <span class="metric-label">전체 요청</span>
+            <strong id="totalEvents">—</strong>
+            <small>Trust Score를 계산한 이벤트</small>
+          </article>
+          <article class="metric-card accent-red">
+            <span class="metric-label">의심 이벤트</span>
+            <strong id="suspiciousEvents">—</strong>
+            <small id="suspiciousRate">전체의 —</small>
+          </article>
+          <article class="metric-card accent-amber">
+            <span class="metric-label">평균 위험도</span>
+            <strong id="averageRisk">—</strong>
+            <small>0에 가까울수록 정상</small>
+          </article>
+          <article class="metric-card accent-violet">
+            <span class="metric-label">상세 분석 대기</span>
+            <strong id="pendingExplanations">—</strong>
+            <small>조합 영향 분석 작업</small>
+          </article>
+        </div>
+
+        <div class="insight-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div><p class="eyebrow">POLICY</p><h3>정책 판정 분포</h3></div>
+              <span class="muted">최근 24시간</span>
+            </div>
+            <div id="policyChart" class="bar-chart loading-block"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-heading">
+              <div><p class="eyebrow">SOURCE</p><h3>로그 원천별 이벤트</h3></div>
+              <span class="muted">수집 범위</span>
+            </div>
+            <div id="sourceChart" class="bar-chart loading-block"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="events" class="section">
+        <div class="section-heading event-heading">
+          <div>
+            <p class="eyebrow">INVESTIGATION QUEUE</p>
+            <h2>이벤트 조사</h2>
+          </div>
+          <div class="filters">
+            <label class="toggle"><input id="suspiciousFilter" type="checkbox" checked><span></span>의심만</label>
+            <select id="policyFilter" aria-label="정책 필터">
+              <option value="">모든 정책</option>
+              <option value="monitor">관찰</option>
+              <option value="step_up">추가 인증</option>
+              <option value="restrict">접근 제한</option>
+              <option value="deny">차단</option>
+              <option value="allow">허용</option>
+            </select>
+            <input id="actorFilter" type="search" placeholder="사용자 식별값" aria-label="사용자 필터">
+          </div>
+        </div>
+
+        <article class="panel table-panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>발생 시각</th>
+                  <th>이벤트</th>
+                  <th>사용자</th>
+                  <th>로그 원천</th>
+                  <th>위험도</th>
+                  <th>Trust Score</th>
+                  <th>정책</th>
+                  <th>분석 상태</th>
+                </tr>
+              </thead>
+              <tbody id="eventRows"></tbody>
+            </table>
+          </div>
+          <div id="emptyEvents" class="empty-state hidden">
+            <div class="empty-icon">◎</div>
+            <h3>조건에 맞는 이벤트가 없습니다</h3>
+            <p>API로 로그를 전송하거나 필터를 변경해 보세요.</p>
+          </div>
+          <footer class="table-footer"><span id="eventCount">0건</span><span>행을 선택하면 판정 근거와 사용자 타임라인을 확인할 수 있습니다.</span></footer>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+  <aside id="eventDrawer" class="drawer" aria-hidden="true" aria-label="이벤트 상세">
+    <header class="drawer-header">
+      <div>
+        <p class="eyebrow">EVENT INVESTIGATION</p>
+        <h2 id="drawerTitle">이벤트 상세</h2>
+      </div>
+      <button id="closeDrawer" class="icon-button" type="button" aria-label="닫기">×</button>
+    </header>
+    <div id="drawerContent" class="drawer-content"></div>
+  </aside>
+
+  <dialog id="apiKeyDialog">
+    <form method="dialog" class="dialog-card">
+      <div class="dialog-heading"><div><p class="eyebrow">AUTHENTICATION</p><h2>API 키 설정</h2></div><button class="icon-button" value="cancel">×</button></div>
+      <p class="muted">서버에 <code>ZTNA_API_KEY</code>가 설정된 경우 같은 값을 입력하세요. 키는 현재 브라우저 탭에만 보관됩니다.</p>
+      <label>API 키<input id="apiKeyInput" type="password" autocomplete="off" placeholder="API 키 입력"></label>
+      <div class="dialog-actions"><button class="button secondary" value="clear" type="submit">지우기</button><button class="button primary" value="save" type="submit">저장</button></div>
+    </form>
+  </dialog>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>

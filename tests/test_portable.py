@@ -11,6 +11,7 @@ from ztna_ueba.model import HierarchicalFieldAttention, ModelConfig
 from ztna_ueba.tokenizer import (
     DEFAULT_EXCLUDED_FIELDS,
     FieldTokenizer,
+    NORMAL_REFERENCE_FIELDS_KEY,
     TokenizerConfig,
     collate_requests,
 )
@@ -86,6 +87,35 @@ def test_portable_tokens_hide_values_and_express_only_baseline_relative_anomaly(
     duration_index = known.field_names.index("duration_ms")
     assert anomalous.numeric_features[action_index][11] > known.numeric_features[action_index][11]
     assert anomalous.numeric_features[duration_index][12] > known.numeric_features[duration_index][12]
+
+
+def test_normal_reference_marker_is_never_tokenized_with_legacy_config():
+    registry, _ = _portable_tokenizer()
+    tokenizer = FieldTokenizer(
+        TokenizerConfig(
+            name_buckets=1024,
+            value_buckets=2048,
+            portable_mode=True,
+            excluded_fields=frozenset(),
+        ),
+        baseline_registry=registry,
+    )
+    tokenized = tokenizer.tokenize_event(
+        {
+            "dataset": "company-a",
+            "source_type": "auth",
+            "event_type": "login",
+            "action": "never-seen-secret-value",
+            "duration_ms": 102,
+            NORMAL_REFERENCE_FIELDS_KEY: ["action"],
+        }
+    )
+
+    assert NORMAL_REFERENCE_FIELDS_KEY not in tokenized.field_names
+    action_index = tokenized.field_names.index("action")
+    baseline_features = tokenized.numeric_features[action_index][8:]
+    assert baseline_features[2:6] == [0.0, 0.0, 0.0, 0.0]
+    assert baseline_features[6] > 0.0
 
 
 def test_unknown_profile_has_zero_coverage_and_is_not_ready():
@@ -207,3 +237,104 @@ def test_normal_only_score_calibration_round_trip_and_unknown_profile():
     )
     assert ready.tolist() == [True, True]
     assert risk[0] > risk[1]
+
+
+def test_hierarchical_ueba_uses_different_actor_baselines_for_same_log_type():
+    records = []
+    for actor, attempts in (("analyst-a", 1), ("analyst-b", 10)):
+        records.extend(
+            {
+                "dataset": "company-a",
+                "source_type": "auth",
+                "event_type": "login",
+                "actor_alias": actor,
+                "device_id_hash": f"device-{actor}",
+                "department": "security",
+                "auth_attempts": attempts,
+            }
+            for _ in range(25)
+        )
+    registry = BaselineRegistry.fit(records, excluded_fields=DEFAULT_EXCLUDED_FIELDS)
+
+    actor_a = {**records[0], "auth_attempts": 10}
+    actor_b = {**records[-1], "auth_attempts": 10}
+    features_a, selection_a = registry.field_features(
+        actor_a, "auth_attempts", actor_a["auth_attempts"]
+    )
+    features_b, selection_b = registry.field_features(
+        actor_b, "auth_attempts", actor_b["auth_attempts"]
+    )
+
+    assert selection_a.scope == "actor"
+    assert selection_b.scope == "actor"
+    assert selection_a.baseline_key != selection_b.baseline_key
+    assert features_a[4] > 0.9
+    assert features_b[4] == 0.0
+
+
+def test_hierarchical_ueba_falls_back_device_peer_then_log_profile():
+    records = [
+        {
+            "dataset": "company-a",
+            "source_type": "vpn",
+            "event_type": "session",
+            "actor_alias": f"user-{index}",
+            "device_id_hash": "shared-device",
+            "department": "finance",
+            "latency_ms": 100 + index % 3,
+        }
+        for index in range(25)
+    ]
+    registry = BaselineRegistry.fit(records, excluded_fields=DEFAULT_EXCLUDED_FIELDS)
+
+    device_event = {**records[0], "actor_alias": "new-user"}
+    device_selection = registry.resolve(device_event, "latency_ms")
+    assert device_selection.scope == "device"
+    assert device_selection.fallback_used is True
+
+    peer_event = {
+        **device_event,
+        "device_id_hash": "new-device",
+    }
+    peer_selection = registry.resolve(peer_event, "latency_ms")
+    assert peer_selection.scope == "peer_group"
+    assert peer_selection.fallback_used is True
+
+    profile_event = {
+        **peer_event,
+        "department": "new-department",
+    }
+    profile_selection = registry.resolve(profile_event, "latency_ms")
+    assert profile_selection.scope == "log_profile"
+    assert profile_selection.fallback_used is True
+    assert [candidate["scope"] for candidate in profile_selection.candidates] == [
+        "actor",
+        "device",
+        "peer_group",
+        "log_profile",
+    ]
+
+
+def test_hierarchical_registry_round_trip_hides_entity_values():
+    records = [
+        {
+            "dataset": "company-a",
+            "source_type": "auth",
+            "event_type": "login",
+            "actor_alias": "sensitive-service-account",
+            "device_id_hash": "sensitive-device-id",
+            "workload_role": "backup-agent",
+            "duration_ms": 100,
+        }
+        for _ in range(25)
+    ]
+    registry = BaselineRegistry.fit(records, excluded_fields=DEFAULT_EXCLUDED_FIELDS)
+    serialized = registry.to_dict()
+    encoded = json.dumps(serialized, sort_keys=True)
+    restored = BaselineRegistry.from_dict(serialized)
+    selection = restored.resolve(records[0], "duration_ms")
+
+    assert serialized["version"] == 2
+    assert selection.scope == "actor"
+    assert "sensitive-service-account" not in encoded
+    assert "sensitive-device-id" not in encoded

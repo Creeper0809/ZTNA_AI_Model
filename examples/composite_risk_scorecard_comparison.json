@@ -10,24 +10,23 @@
       "T": 0.1
     },
     "factor_scores": {
-      "B": 75.0,
-      "N": 85.0,
-      "D": 50.0,
-      "T": 100.0
+      "B": 58.333333333333336,
+      "N": 62.5,
+      "D": 50.0
     },
     "factor_contributions": {
-      "B": 30.0,
-      "N": 25.5,
-      "D": 10.0,
-      "T": 10.0
+      "B": 25.925925925925927,
+      "N": 20.833333333333332,
+      "D": 11.111111111111112
     },
-    "trust_score": 75.5,
-    "policy": "require_additional_authentication",
+    "trust_score": 57.870370370370374,
+    "policy": "block",
     "coverage": {
       "observed_or_project_mapped_metrics": 10,
-      "total_metrics": 20,
-      "ratio": 0.5,
-      "favorable_normal_assumptions": 10
+      "total_metrics": 10,
+      "paper_total_metrics": 20,
+      "ratio": 1.0,
+      "favorable_normal_assumptions": 0
     },
     "key_sub_metric_scores": {
       "03:00_off_hours_login": 0,
@@ -66,11 +65,11 @@
       "policy": "allow"
     }
   },
-  "comparison": "The fixed paper-derived scorecard accumulates risk and requires MFA; the profile-calibrated proposed model applies stronger field concentration and blocks. One synthetic case does not establish superiority.",
+  "comparison": "The coverage-aware rule baseline and the profile-calibrated proposed model both block this composite-risk case. One synthetic case does not establish superiority.",
   "limitations": [
     "The paper calls this a Trust Score model; this project uses its deterministic score tables and fixed weights as a rule baseline.",
     "Latency-to-network-stability and aggregate device-health mappings are project proxies.",
-    "Ten unobserved sub-metrics receive favorable normal scores.",
+    "Structurally inapplicable sub-metrics are excluded and no absent metric receives a favorable normal score.",
     "Company replay labels and policy costs are required to decide whether MFA or blocking is the better action."
   ]
 }
